@@ -6,12 +6,13 @@
 #include <fstream>
 using std::string;
 
-constexpr int MAX_SIZE = 8; //into debug mode you can modify node_size to 4
+constexpr int MAX_SIZE = 2000;
 
 class BPT;
 
-template<class T, int info_len>
-class MemoryRiver {
+template <class T, int info_len>
+class MemoryRiver
+{
   friend BPT;
 
 private:
@@ -22,81 +23,96 @@ private:
 public:
   MemoryRiver() = default;
 
-  MemoryRiver(const std::string &file_name) : file_name(file_name) {
+  MemoryRiver(const std::string& file_name) : file_name(file_name)
+  {
   }
 
-  void initialise(std::string FN = "") {
+  void initialise(std::string FN = "")
+  {
     if (FN != "")file_name = FN;
     file.open(file_name, std::ios::in | std::ios::out);
-    if (file.is_open()) {
+    if (file.is_open())
+    {
       return;
     }
     file.open(file_name, std::ios::out);
     file.close();
     file.open(file_name, std::ios::in | std::ios::out);
     int tmp = 0;
-    for (int i = 0; i < info_len; ++i) {
-      file.write(reinterpret_cast<char *>(&tmp), sizeof(int)); //初始化文件
+    for (int i = 0; i < info_len; ++i)
+    {
+      file.write(reinterpret_cast<char*>(&tmp), sizeof(int)); //初始化文件
     }
   }
 
-  void exit() {
+  void exit()
+  {
     file.close();
   }
 
-  void get_info(int &tmp, int n) {
+  void get_info(int& tmp, int n)
+  {
     //读入第n个整数
     if (n > info_len) return;
     file.seekg((n - 1) * sizeof(int));
-    file.read(reinterpret_cast<char *>(&tmp), sizeof(int));
+    file.read(reinterpret_cast<char*>(&tmp), sizeof(int));
   }
 
-  void write_info(int tmp, int n) {
+  void write_info(int tmp, int n)
+  {
     //写入第n个整数
     if (n > info_len) return;
     file.seekp((n - 1) * sizeof(int));
-    file.write(reinterpret_cast<char *>(&tmp), sizeof(int));
+    file.write(reinterpret_cast<char*>(&tmp), sizeof(int));
   }
 
-  void write(T &t, int place, int size) {
+  void write(T& t, int place, int size)
+  {
     //一次性在place位置写入size个数据
     file.seekp(place);
-    file.write(reinterpret_cast<char *>(&t), sizeofT * size);
+    file.write(reinterpret_cast<char*>(&t), sizeofT * size);
   }
 
-  int push(T &t) {
+  int push(T& t)
+  {
     //将数据写到文件尾部，并返回其地址
     file.seekp(0, file.end);
     const int index = file.tellp();
-    file.write(reinterpret_cast<char *>(&t), sizeofT);
+    file.write(reinterpret_cast<char*>(&t), sizeofT);
     return index;
   }
 
-  void read(T &t, const int idx, int size) {
+  void read(T& t, const int idx, int size)
+  {
     //一次性在idx位置读出size个数据
     int position = idx;
     file.seekg(position, std::ios::beg);
-    file.read(reinterpret_cast<char *>(&t), sizeofT * size);
+    file.read(reinterpret_cast<char*>(&t), sizeofT * size);
   }
 
-  void flush() {
+  void flush()
+  {
     file.flush();
   }
 };
 
-struct Data {
+struct Data
+{
   char key[70]{};
   int value{};
 
   Data() = default;
 
-  Data(char key_[70], int value_) {
+  Data(char key_[70], int value_)
+  {
     strcpy(key, key_);
     value = value_;
   }
 
-  Data &operator=(const Data &other) {
-    if (this == &other) {
+  Data& operator=(const Data& other)
+  {
+    if (this == &other)
+    {
       return *this;
     }
     strcpy(key, other.key);
@@ -104,18 +120,19 @@ struct Data {
     return *this;
   }
 
-  friend bool operator==(const Data &, const Data &);
+  friend bool operator==(const Data&, const Data&);
 
-  friend bool operator<(const Data &, const Data &);
+  friend bool operator<(const Data&, const Data&);
 
-  friend bool operator<=(const Data &, const Data &);
+  friend bool operator<=(const Data&, const Data&);
 
-  friend bool operator>(const Data &, const Data &);
+  friend bool operator>(const Data&, const Data&);
 
-  friend bool operator>=(const Data &, const Data &);
+  friend bool operator>=(const Data&, const Data&);
 };
 
-struct Node {
+struct Node
+{
   bool is_leaf = true; //是否为叶节点
   Data data[MAX_SIZE + 1]{}; //节点里的元素
   int parent = -1; //父节点索引，root为-1
@@ -125,17 +142,20 @@ struct Node {
   int size = 0; //元素数量
   Node() = default;
 
-  Node(const Node &other) = default;
+  Node(const Node& other) = default;
 };
 
-class BPT {
+class BPT
+{
 public:
-  BPT() {
+  BPT()
+  {
     tree.initialise("Tree");
     tree.get_info(root, 1);
   }
 
-  ~BPT() {
+  ~BPT()
+  {
     tree.write_info(root, 1);
     tree.exit();
   }
@@ -159,8 +179,8 @@ private:
 public:
   void Find(char key[70]);
 
-  void Insert(const Data &);
+  void Insert(const Data&);
 
-  void Remove(const Data &);
+  void Remove(const Data&);
 };
 #endif //TOOL_H
