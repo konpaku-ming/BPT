@@ -6,7 +6,7 @@
 #include <fstream>
 using std::string;
 
-constexpr int MAX_SIZE = 2000;
+constexpr int MAX_SIZE = 200;
 
 class BPT;
 
